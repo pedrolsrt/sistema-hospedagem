@@ -1,8 +1,11 @@
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\controller\ClienteController.java
+C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\controller\QuartoController.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\controller\ResidenciaController.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\dto\ClienteRequestDTO.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\dto\ClienteResponseDTO.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\dto\ErroRespostaDTO.java
+C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\dto\QuartoRequestDTO.java
+C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\dto\QuartoResponseDTO.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\dto\ResidenciaRequestDTO.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\dto\ResidenciaResponseDTO.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\enums\TipoQuarto.java
@@ -13,7 +16,9 @@ C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\model\Quarto.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\model\Residencia.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\repository\ClienteRepository.java
+C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\repository\QuartoRepository.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\repository\ResidenciaRepository.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\service\ClienteService.java
+C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\service\QuartoService.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\service\ResidenciaService.java
 C:\Users\pedro\Downloads\sistema-hospedagem\sistema-hospedagem\src\main\java\br\pucminas\sistema_hospedagem\SistemaHospedagemApplication.java
