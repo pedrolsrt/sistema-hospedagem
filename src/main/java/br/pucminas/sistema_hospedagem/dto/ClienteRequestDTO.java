@@ -28,15 +28,20 @@ public class ClienteRequestDTO {
     @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
     private String email;
 
+    @NotBlank(message = "A senha do cliente é obrigatória.")
+    @Size(min = 6, max = 100, message = "A senha deve ter entre 6 e 100 caracteres.")
+    private String senha;
+
     public ClienteRequestDTO() {
     }
 
-    public ClienteRequestDTO(String nome, String cpf, String endereco, String telefone, String email) {
+    public ClienteRequestDTO(String nome, String cpf, String endereco, String telefone, String email, String senha) {
         this.nome = nome;
         this.cpf = cpf;
         this.endereco = endereco;
         this.telefone = telefone;
         this.email = email;
+        this.senha = senha;
     }
 
     public String getNome() {
@@ -46,6 +51,7 @@ public class ClienteRequestDTO {
     public void setNome(String nome) {
         this.nome = nome;
     }
+
 
     public String getCpf() {
         return cpf;
@@ -77,5 +83,13 @@ public class ClienteRequestDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+ 
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
     }
 }

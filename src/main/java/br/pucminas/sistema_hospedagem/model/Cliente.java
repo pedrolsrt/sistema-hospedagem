@@ -52,4 +52,9 @@ public class Cliente {
     @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
+
+    @NotBlank(message = "A senha do cliente é obrigatória.")
+    @Size(min = 6, max = 100, message = "A senha deve ter entre 6 e 100 caracteres.")
+    @Column(name = "senha", nullable = false, length = 100)
+    private String senha;
 }

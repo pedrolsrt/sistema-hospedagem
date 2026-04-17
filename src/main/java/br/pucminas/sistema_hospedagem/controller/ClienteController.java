@@ -2,6 +2,8 @@ package br.pucminas.sistema_hospedagem.controller;
 
 import br.pucminas.sistema_hospedagem.dto.ClienteRequestDTO;
 import br.pucminas.sistema_hospedagem.dto.ClienteResponseDTO;
+import br.pucminas.sistema_hospedagem.dto.LoginRequestDTO;
+import br.pucminas.sistema_hospedagem.dto.LoginResponseDTO;
 import br.pucminas.sistema_hospedagem.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -49,5 +51,11 @@ public class ClienteController {
     public ResponseEntity<Void> excluirCliente(@PathVariable Long id) {
         clienteService.excluirCliente(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> autenticar(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
+        LoginResponseDTO resposta = clienteService.autenticar(loginRequestDTO);
+        return ResponseEntity.ok(resposta);
     }
 }

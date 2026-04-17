@@ -2,6 +2,8 @@ package br.pucminas.sistema_hospedagem.service;
 
 import br.pucminas.sistema_hospedagem.dto.ClienteRequestDTO;
 import br.pucminas.sistema_hospedagem.dto.ClienteResponseDTO;
+import br.pucminas.sistema_hospedagem.dto.LoginRequestDTO;
+import br.pucminas.sistema_hospedagem.dto.LoginResponseDTO;
 import br.pucminas.sistema_hospedagem.exception.RegraDeNegocioException;
 import br.pucminas.sistema_hospedagem.exception.RecursoNaoEncontradoException;
 import br.pucminas.sistema_hospedagem.model.Cliente;
@@ -60,6 +62,7 @@ public class ClienteService {
         clienteExistente.setEndereco(clienteRequestDTO.getEndereco());
         clienteExistente.setTelefone(clienteRequestDTO.getTelefone());
         clienteExistente.setEmail(clienteRequestDTO.getEmail());
+        clienteExistente.setSenha(clienteRequestDTO.getSenha());
 
         Cliente clienteAtualizado = clienteRepository.save(clienteExistente);
         return converterParaResponseDTO(clienteAtualizado);
@@ -70,6 +73,18 @@ public class ClienteService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado com o id: " + id));
 
         clienteRepository.delete(cliente);
+    }
+
+    public LoginResponseDTO autenticar(LoginRequestDTO loginRequestDTO) {
+        Cliente cliente = clienteRepository.findByEmailAndSenha(loginRequestDTO.getEmail(), loginRequestDTO.getSenha())
+                .orElseThrow(() -> new RegraDeNegocioException("E-mail ou senha inválidos."));
+
+        return new LoginResponseDTO(
+                cliente.getId(),
+                cliente.getNome(),
+                cliente.getEmail(),
+                "Autenticação realizada com sucesso."
+        );
     }
 
     private void validarCpfDuplicado(String cpf) {
@@ -91,6 +106,7 @@ public class ClienteService {
         cliente.setEndereco(dto.getEndereco());
         cliente.setTelefone(dto.getTelefone());
         cliente.setEmail(dto.getEmail());
+        cliente.setSenha(dto.getSenha());
         return cliente;
     }
 
