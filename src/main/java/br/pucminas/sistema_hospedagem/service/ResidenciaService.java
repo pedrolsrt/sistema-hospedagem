@@ -1,8 +1,10 @@
 package br.pucminas.sistema_hospedagem.service;
 
+import br.pucminas.sistema_hospedagem.dto.HistoricoHospedagemResponseDTO;
 import br.pucminas.sistema_hospedagem.dto.ResidenciaRequestDTO;
 import br.pucminas.sistema_hospedagem.dto.ResidenciaResponseDTO;
 import br.pucminas.sistema_hospedagem.exception.RecursoNaoEncontradoException;
+import br.pucminas.sistema_hospedagem.model.Aluguel;
 import br.pucminas.sistema_hospedagem.model.Residencia;
 import br.pucminas.sistema_hospedagem.repository.ResidenciaRepository;
 import org.springframework.stereotype.Service;
@@ -60,6 +62,16 @@ public class ResidenciaService {
         residenciaRepository.delete(residencia);
     }
 
+    public List<HistoricoHospedagemResponseDTO> listarHistoricoHospedagens(Long residenciaId) {
+        Residencia residencia = residenciaRepository.findById(residenciaId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Residência não encontrada com o id: " + residenciaId));
+
+        return residencia.getAlugueis()
+                .stream()
+                .map(this::converterParaHistoricoDTO)
+                .toList();
+    }
+
     private Residencia converterParaEntidade(ResidenciaRequestDTO dto) {
         Residencia residencia = new Residencia();
         residencia.setEndereco(dto.getEndereco());
@@ -80,6 +92,20 @@ public class ResidenciaService {
                 residencia.getCep(),
                 residencia.getTelefone(),
                 residencia.getEmail()
+        );
+    }
+
+    private HistoricoHospedagemResponseDTO converterParaHistoricoDTO(Aluguel aluguel) {
+        return new HistoricoHospedagemResponseDTO(
+                aluguel.getId(),
+                aluguel.getCliente().getId(),
+                aluguel.getCliente().getNome(),
+                aluguel.getQuarto().getId(),
+                aluguel.getDataEntrada(),
+                aluguel.getDataSaida(),
+                aluguel.getQuantidadeDiarias(),
+                aluguel.getValorFinal(),
+                aluguel.getPagamento().getStatus().name()
         );
     }
 }

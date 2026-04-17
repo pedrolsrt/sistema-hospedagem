@@ -1,5 +1,6 @@
 package br.pucminas.sistema_hospedagem.controller;
 
+import br.pucminas.sistema_hospedagem.dto.HistoricoHospedagemResponseDTO;
 import br.pucminas.sistema_hospedagem.dto.ResidenciaRequestDTO;
 import br.pucminas.sistema_hospedagem.dto.ResidenciaResponseDTO;
 import br.pucminas.sistema_hospedagem.service.ResidenciaService;
@@ -49,5 +50,11 @@ public class ResidenciaController {
     public ResponseEntity<Void> excluirResidencia(@PathVariable Long id) {
         residenciaService.excluirResidencia(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/historico")
+    public ResponseEntity<List<HistoricoHospedagemResponseDTO>> listarHistoricoHospedagens(@PathVariable Long id) {
+        List<HistoricoHospedagemResponseDTO> historico = residenciaService.listarHistoricoHospedagens(id);
+        return ResponseEntity.ok(historico);
     }
 }
