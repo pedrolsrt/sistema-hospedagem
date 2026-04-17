@@ -62,6 +62,6 @@ public class Aluguel {
 
     @NotNull(message = "O pagamento associado é obrigatório.")
     @OneToOne
-    @JoinColumn(name = "pagamento_id", nullable = false)
+    @JoinColumn(name = "pagamento_id", nullable = false, unique = true)
     private Pagamento pagamento;
 }

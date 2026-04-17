@@ -28,9 +28,9 @@ import java.util.List;
 @Service
 public class AluguelService {
 
+    private static final double ADICIONAL_TIPO_CASAL = 40.0;
     private static final double ADICIONAL_AR_CONDICIONADO = 30.0;
     private static final double ADICIONAL_HIDROMASSAGEM = 50.0;
-    private static final double ADICIONAL_QUARTO_CASAL = 40.0;
 
     private final AluguelRepository aluguelRepository;
     private final PagamentoRepository pagamentoRepository;
@@ -71,6 +71,7 @@ public class AluguelService {
                 aluguelRequestDTO.getDataSaida()
         );
 
+        // Ajusta a lógica das diárias considerando a regra do meio-dia prevista no enunciado.
         Integer quantidadeDiarias = calcularQuantidadeDiarias(
                 aluguelRequestDTO.getDataEntrada(),
                 aluguelRequestDTO.getDataSaida()
@@ -141,6 +142,7 @@ public class AluguelService {
             throw new RegraDeNegocioException("O quarto já está ocupado no período informado.");
         }
 
+        // Impede que o mesmo quarto seja reservado ou alugado em períodos conflitantes.
         List<Reserva> reservasConflitantes =
                 reservaRepository.findByQuartoIdAndStatusAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
                         quartoId,
@@ -191,7 +193,7 @@ public class AluguelService {
         double valor = quarto.getValorBaseDiaria();
 
         if (quarto.getTipo() == TipoQuarto.CASAL) {
-            valor += ADICIONAL_QUARTO_CASAL;
+            valor += ADICIONAL_TIPO_CASAL;
         }
 
         if (Boolean.TRUE.equals(quarto.getPossuiArCondicionado())) {

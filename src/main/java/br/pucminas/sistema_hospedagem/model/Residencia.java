@@ -65,4 +65,8 @@ public class Residencia {
     @OneToMany(mappedBy = "residencia", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Quarto> quartos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "residencia")
+    @Builder.Default
+    private List<Aluguel> alugueis = new ArrayList<>();
 }
