@@ -36,6 +36,7 @@ br\pucminas\sistema_hospedagem\model\Aluguel.class
 br\pucminas\sistema_hospedagem\repository\ClienteRepository.class
 br\pucminas\sistema_hospedagem\dto\ReservaRequestDTO.class
 br\pucminas\sistema_hospedagem\service\AluguelService.class
+br\pucminas\sistema_hospedagem\dto\HistoricoHospedagemResponseDTO.class
 br\pucminas\sistema_hospedagem\repository\ReservaRepository.class
 br\pucminas\sistema_hospedagem\dto\ClienteRequestDTO.class
 br\pucminas\sistema_hospedagem\repository\PagamentoRepository.class
