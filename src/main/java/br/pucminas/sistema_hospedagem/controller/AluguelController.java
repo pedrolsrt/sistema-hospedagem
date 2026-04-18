@@ -2,6 +2,7 @@ package br.pucminas.sistema_hospedagem.controller;
 
 import br.pucminas.sistema_hospedagem.dto.AluguelRequestDTO;
 import br.pucminas.sistema_hospedagem.dto.AluguelResponseDTO;
+import br.pucminas.sistema_hospedagem.dto.ReciboResponseDTO;
 import br.pucminas.sistema_hospedagem.service.AluguelService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -42,5 +43,11 @@ public class AluguelController {
     public ResponseEntity<AluguelResponseDTO> marcarPagamentoComoPago(@PathVariable Long id) {
         AluguelResponseDTO aluguelPago = aluguelService.marcarPagamentoComoPago(id);
         return ResponseEntity.ok(aluguelPago);
+    }
+
+    @GetMapping("/{id}/recibo")
+    public ResponseEntity<ReciboResponseDTO> gerarRecibo(@PathVariable Long id) {
+        ReciboResponseDTO recibo = aluguelService.gerarRecibo(id);
+        return ResponseEntity.ok(recibo);
     }
 }

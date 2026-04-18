@@ -14,6 +14,7 @@ br\pucminas\sistema_hospedagem\enums\StatusPagamento.class
 br\pucminas\sistema_hospedagem\dto\AluguelResponseDTO.class
 br\pucminas\sistema_hospedagem\dto\ResidenciaResponseDTO.class
 br\pucminas\sistema_hospedagem\dto\ErroRespostaDTO.class
+br\pucminas\sistema_hospedagem\dto\ReciboResponseDTO.class
 br\pucminas\sistema_hospedagem\SistemaHospedagemApplication.class
 br\pucminas\sistema_hospedagem\model\Reserva$ReservaBuilder.class
 br\pucminas\sistema_hospedagem\model\Quarto$QuartoBuilder.class

@@ -2,6 +2,7 @@ package br.pucminas.sistema_hospedagem.service;
 
 import br.pucminas.sistema_hospedagem.dto.AluguelRequestDTO;
 import br.pucminas.sistema_hospedagem.dto.AluguelResponseDTO;
+import br.pucminas.sistema_hospedagem.dto.ReciboResponseDTO;
 import br.pucminas.sistema_hospedagem.enums.StatusPagamento;
 import br.pucminas.sistema_hospedagem.enums.StatusReserva;
 import br.pucminas.sistema_hospedagem.enums.TipoQuarto;
@@ -71,7 +72,6 @@ public class AluguelService {
                 aluguelRequestDTO.getDataSaida()
         );
 
-        // Ajusta a lógica das diárias considerando a regra do meio-dia prevista no enunciado.
         Integer quantidadeDiarias = calcularQuantidadeDiarias(
                 aluguelRequestDTO.getDataEntrada(),
                 aluguelRequestDTO.getDataSaida()
@@ -124,6 +124,24 @@ public class AluguelService {
         return converterParaResponseDTO(aluguel);
     }
 
+    public ReciboResponseDTO gerarRecibo(Long id) {
+        Aluguel aluguel = aluguelRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Aluguel não encontrado com o id: " + id));
+
+        return new ReciboResponseDTO(
+                aluguel.getId(),
+                aluguel.getCliente().getNome(),
+                aluguel.getResidencia().getEndereco(),
+                aluguel.getQuarto().getId(),
+                aluguel.getDataEntrada(),
+                aluguel.getDataSaida(),
+                aluguel.getQuantidadeDiarias(),
+                aluguel.getValorFinal(),
+                aluguel.getPagamento().getStatus().name(),
+                montarTextoRecibo(aluguel)
+        );
+    }
+
     private void validarDatas(LocalDateTime dataEntrada, LocalDateTime dataSaida) {
         if (!dataSaida.isAfter(dataEntrada)) {
             throw new RegraDeNegocioException("A data de saída deve ser posterior à data de entrada.");
@@ -142,7 +160,6 @@ public class AluguelService {
             throw new RegraDeNegocioException("O quarto já está ocupado no período informado.");
         }
 
-        // Impede que o mesmo quarto seja reservado ou alugado em períodos conflitantes.
         List<Reserva> reservasConflitantes =
                 reservaRepository.findByQuartoIdAndStatusAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
                         quartoId,
@@ -207,11 +224,16 @@ public class AluguelService {
         return valor;
     }
 
-    private String gerarRecibo(Aluguel aluguel) {
-        return "Data e horário de entrada: " + aluguel.getDataEntrada() + System.lineSeparator()
+    private String montarTextoRecibo(Aluguel aluguel) {
+        return "=== RECIBO DE HOSPEDAGEM ===" + System.lineSeparator()
+                + "Cliente: " + aluguel.getCliente().getNome() + System.lineSeparator()
+                + "Residência: " + aluguel.getResidencia().getEndereco() + System.lineSeparator()
+                + "Quarto: " + aluguel.getQuarto().getId() + System.lineSeparator()
+                + "Data e horário de entrada: " + aluguel.getDataEntrada() + System.lineSeparator()
                 + "Data e horário de saída: " + aluguel.getDataSaida() + System.lineSeparator()
                 + "Número de diárias: " + aluguel.getQuantidadeDiarias() + System.lineSeparator()
-                + "Total à pagar: R$ " + String.format("%.2f", aluguel.getValorFinal());
+                + "Total à pagar: R$ " + String.format("%.2f", aluguel.getValorFinal()) + System.lineSeparator()
+                + "Status do pagamento: " + aluguel.getPagamento().getStatus().name();
     }
 
     private AluguelResponseDTO converterParaResponseDTO(Aluguel aluguel) {
@@ -226,7 +248,7 @@ public class AluguelService {
                 aluguel.getValorFinal(),
                 aluguel.getPagamento().getId(),
                 aluguel.getPagamento().getStatus().name(),
-                gerarRecibo(aluguel)
+                montarTextoRecibo(aluguel)
         );
     }
 }
