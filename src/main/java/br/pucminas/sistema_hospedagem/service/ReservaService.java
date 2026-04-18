@@ -5,14 +5,17 @@ import br.pucminas.sistema_hospedagem.dto.ReservaResponseDTO;
 import br.pucminas.sistema_hospedagem.enums.StatusReserva;
 import br.pucminas.sistema_hospedagem.exception.RegraDeNegocioException;
 import br.pucminas.sistema_hospedagem.exception.RecursoNaoEncontradoException;
+import br.pucminas.sistema_hospedagem.model.Aluguel;
 import br.pucminas.sistema_hospedagem.model.Cliente;
 import br.pucminas.sistema_hospedagem.model.Quarto;
 import br.pucminas.sistema_hospedagem.model.Reserva;
+import br.pucminas.sistema_hospedagem.repository.AluguelRepository;
 import br.pucminas.sistema_hospedagem.repository.ClienteRepository;
 import br.pucminas.sistema_hospedagem.repository.QuartoRepository;
 import br.pucminas.sistema_hospedagem.repository.ReservaRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -21,13 +24,16 @@ public class ReservaService {
     private final ReservaRepository reservaRepository;
     private final ClienteRepository clienteRepository;
     private final QuartoRepository quartoRepository;
+    private final AluguelRepository aluguelRepository;
 
     public ReservaService(ReservaRepository reservaRepository,
                           ClienteRepository clienteRepository,
-                          QuartoRepository quartoRepository) {
+                          QuartoRepository quartoRepository,
+                          AluguelRepository aluguelRepository) {
         this.reservaRepository = reservaRepository;
         this.clienteRepository = clienteRepository;
         this.quartoRepository = quartoRepository;
+        this.aluguelRepository = aluguelRepository;
     }
 
     public ReservaResponseDTO cadastrarReserva(ReservaRequestDTO reservaRequestDTO) {
@@ -95,8 +101,8 @@ public class ReservaService {
     }
 
     private void validarDisponibilidadeDoQuarto(Long quartoId,
-                                                java.time.LocalDateTime dataEntrada,
-                                                java.time.LocalDateTime dataSaida) {
+                                                LocalDateTime dataEntrada,
+                                                LocalDateTime dataSaida) {
         List<Reserva> reservasConflitantes =
                 reservaRepository.findByQuartoIdAndStatusAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
                         quartoId,
@@ -107,6 +113,17 @@ public class ReservaService {
 
         if (!reservasConflitantes.isEmpty()) {
             throw new RegraDeNegocioException("O quarto já possui uma reserva ativa para o período informado.");
+        }
+
+        List<Aluguel> alugueisConflitantes =
+                aluguelRepository.findByQuartoIdAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
+                        quartoId,
+                        dataSaida,
+                        dataEntrada
+                );
+
+        if (!alugueisConflitantes.isEmpty()) {
+            throw new RegraDeNegocioException("O quarto já está alugado no período informado.");
         }
     }
 
