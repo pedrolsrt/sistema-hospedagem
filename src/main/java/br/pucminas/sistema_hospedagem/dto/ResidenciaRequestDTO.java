@@ -2,6 +2,7 @@ package br.pucminas.sistema_hospedagem.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class ResidenciaRequestDTO {
@@ -19,11 +20,17 @@ public class ResidenciaRequestDTO {
     private String bairro;
 
     @NotBlank(message = "O CEP da residência é obrigatório.")
-    @Size(max = 20, message = "O CEP deve ter no máximo 20 caracteres.")
+    @Pattern(
+            regexp = "^\\d{8}$",
+            message = "O CEP deve conter exatamente 8 dígitos numéricos."
+    )
     private String cep;
 
     @NotBlank(message = "O telefone da residência é obrigatório.")
-    @Size(max = 20, message = "O telefone deve ter no máximo 20 caracteres.")
+    @Pattern(
+            regexp = "^\\d{10,11}$",
+            message = "O telefone deve conter 10 ou 11 dígitos numéricos."
+    )
     private String telefone;
 
     @NotBlank(message = "O e-mail da residência é obrigatório.")

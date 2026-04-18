@@ -20,7 +20,10 @@ public class ClienteRequestDTO {
     private String endereco;
 
     @NotBlank(message = "O telefone do cliente é obrigatório.")
-    @Size(max = 20, message = "O telefone deve ter no máximo 20 caracteres.")
+    @Pattern(
+            regexp = "^\\d{10,11}$",
+            message = "O telefone deve conter 10 ou 11 dígitos numéricos."
+    )
     private String telefone;
 
     @NotBlank(message = "O e-mail do cliente é obrigatório.")

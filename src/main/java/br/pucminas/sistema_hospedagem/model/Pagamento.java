@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +30,7 @@ public class Pagamento {
     private Long id;
 
     @NotNull(message = "O valor do pagamento é obrigatório.")
+    @Positive(message = "O valor do pagamento deve ser maior que zero.")
     @Column(name = "valor", nullable = false)
     private Double valor;
 

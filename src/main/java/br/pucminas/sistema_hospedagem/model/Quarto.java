@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,15 +36,19 @@ public class Quarto {
     private TipoQuarto tipo;
 
     @NotNull(message = "O valor base da diária é obrigatório.")
+    @Positive(message = "O valor base da diária deve ser maior que zero.")
     @Column(name = "valor_base_diaria", nullable = false)
     private Double valorBaseDiaria;
 
+    @NotNull(message = "A informação de ar-condicionado é obrigatória.")
     @Column(name = "possui_ar_condicionado", nullable = false)
     private Boolean possuiArCondicionado;
 
+    @NotNull(message = "A informação de hidromassagem é obrigatória.")
     @Column(name = "possui_hidromassagem", nullable = false)
     private Boolean possuiHidromassagem;
 
+    @NotNull(message = "A residência do quarto é obrigatória.")
     @ManyToOne
     @JoinColumn(name = "residencia_id", nullable = false)
     private Residencia residencia;

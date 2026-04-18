@@ -10,13 +10,13 @@ public class QuartoRequestDTO {
     private TipoQuarto tipo;
 
     @NotNull(message = "O valor base da diária é obrigatório.")
-    @Positive(message = "O valor da diária deve ser maior que zero.")
+    @Positive(message = "O valor base da diária deve ser maior que zero.")
     private Double valorBaseDiaria;
 
-    @NotNull(message = "Informe se possui ar-condicionado.")
+    @NotNull(message = "Informe se o quarto possui ar-condicionado.")
     private Boolean possuiArCondicionado;
 
-    @NotNull(message = "Informe se possui hidromassagem.")
+    @NotNull(message = "Informe se o quarto possui hidromassagem.")
     private Boolean possuiHidromassagem;
 
     @NotNull(message = "O id da residência é obrigatório.")

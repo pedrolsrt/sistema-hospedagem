@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -53,10 +54,12 @@ public class Aluguel {
     private LocalDateTime dataSaida;
 
     @NotNull(message = "A quantidade de diárias é obrigatória.")
+    @Positive(message = "A quantidade de diárias deve ser maior que zero.")
     @Column(name = "quantidade_diarias", nullable = false)
     private Integer quantidadeDiarias;
 
     @NotNull(message = "O valor final é obrigatório.")
+    @Positive(message = "O valor final deve ser maior que zero.")
     @Column(name = "valor_final", nullable = false)
     private Double valorFinal;
 
