@@ -1,84 +1,259 @@
-# Sistema de Hospedagem
+# Sistema de Hospedagem API
 
-Projeto desenvolvido para a disciplina de Programação Modular com o objetivo de implementar um sistema de gerenciamento de hospedagens, utilizando arquitetura em camadas, API REST com Spring Boot e persistência em banco de dados MySQL.
+API REST desenvolvida em Java com Spring Boot para gerenciamento de hospedagens em residências. O sistema permite cadastro de clientes, residências e quartos, controle de reservas e aluguéis, cálculo automático de diárias, emissão de recibos e histórico de hospedagens.
 
-## Objetivo do projeto
+---
 
-O sistema foi construído para auxiliar no gerenciamento de residências e quartos disponíveis para hospedagem, permitindo o cadastro de clientes, a realização de reservas e aluguéis, o controle de disponibilidade, o cálculo automático de diárias, o controle de pagamentos e a emissão de recibos.
+## Objetivo
 
-## Tecnologias utilizadas
+Aplicar os conceitos da disciplina de Programação Modular por meio de uma solução organizada, escalável e baseada em regras reais de negócio.
+
+---
+
+## Tecnologias Utilizadas
 
 - Java 17
 - Spring Boot
+- Spring Web
 - Spring Data JPA
+- Bean Validation
 - MySQL
 - Maven
 - Lombok
-- Bean Validation
+- JUnit 5
+- Mockito
 
-## Estrutura do projeto
+---
 
-O sistema foi organizado seguindo o padrão de arquitetura em camadas:
+## Arquitetura
 
-- **Controller**: responsável pelos endpoints da API
-- **Service**: responsável pelas regras de negócio
-- **Repository**: responsável pelo acesso ao banco de dados
-- **Model**: entidades do sistema
-- **DTO**: objetos utilizados para entrada e saída de dados
+O projeto foi estruturado em camadas:
+
+- **Controller**: endpoints REST
+- **Service**: regras de negócio
+- **Repository**: acesso a dados
+- **Model**: entidades
+- **DTO**: entrada e saída de dados
 - **Exception**: tratamento global de erros
 
-## Funcionalidades implementadas
+### Estrutura de Pacotes
+
+```text
+src/main/java/br/pucminas/sistema_hospedagem
+├── controller
+├── dto
+├── enums
+├── exception
+├── model
+├── repository
+└── service
+```
+
+### Fluxo Simplificado
+
+```mermaid
+flowchart TD
+    A[Controller] --> B[Service]
+    B --> C[Repository]
+    C --> D[(MySQL)]
+```
+
+---
+
+## Funcionalidades
 
 ### Clientes
-- cadastro de clientes
-- listagem de clientes
-- busca por id
-- atualização de dados
-- exclusão de clientes
+- Cadastro
+- Listagem
+- Busca por id
+- Atualização
+- Exclusão
+- Login por e-mail e senha
 
 ### Residências
-- cadastro de residências
-- listagem de residências
-- busca por id
-- atualização de dados
-- exclusão de residências
+- Cadastro
+- Listagem
+- Busca por id
+- Atualização
+- Exclusão
+- Histórico de hospedagens
 
 ### Quartos
-- cadastro de quartos
-- listagem de quartos
-- busca por id
-- atualização de dados
-- exclusão de quartos
+- Cadastro
+- Listagem
+- Busca por id
+- Atualização
+- Exclusão
 
 ### Reservas
-- cadastro de reservas futuras
-- validação de conflito de período
-- listagem de reservas
-- busca por id
-- cancelamento de reservas
+- Cadastro
+- Cancelamento
+- Validação de conflito de datas
+- Bloqueio em quarto alugado
 
 ### Aluguéis
-- cadastro de aluguéis
-- validação de disponibilidade do quarto
-- cálculo automático de diárias
-- cálculo do valor final
-- criação de pagamento associado
-- emissão de recibo
-- listagem de aluguéis
-- busca por id
-- marcação de pagamento como pago
+- Cadastro
+- Controle de disponibilidade
+- Cálculo automático de diárias
+- Controle de pagamento
+- Emissão de recibo
+- Histórico por residência
 
-## Regras de negócio aplicadas
+---
 
-- o sistema impede conflito de reservas no mesmo quarto para períodos incompatíveis
-- o sistema impede aluguéis em quartos já ocupados
-- a quantidade de diárias é calculada considerando a regra do meio-dia
-- o valor final do aluguel é calculado com base no valor da diária e nos adicionais do quarto
-- cada aluguel gera um pagamento associado
-- o recibo do aluguel é gerado com os dados principais da hospedagem
+## Regras de Negócio
 
-## Como executar o projeto
+- Não permite reservas conflitantes
+- Não permite reserva em quarto alugado
+- Não permite aluguel em quarto ocupado
+- Não permite aluguel com reserva ativa
+- Regra do meio-dia aplicada no cálculo das diárias
+- Todo aluguel gera pagamento
+- Status de pagamento: `PENDENTE` e `PAGO`
 
-### 1. Clonar o repositório
+---
+
+## Como Executar
+
+### 1. Clonar repositório
+
 ```bash
-git clone <url-do-repositorio>
+git clone URL_DO_REPOSITORIO
+```
+
+### 2. Criar banco MySQL
+
+```sql
+CREATE DATABASE sistema_hospedagem;
+```
+
+### 3. Configurar `application.properties`
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/sistema_hospedagem
+spring.datasource.username=root
+spring.datasource.password=SUA_SENHA
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+server.port=8080
+```
+
+### 4. Executar aplicação
+
+```bash
+.\mvnw.cmd spring-boot:run
+```
+
+### 5. Executar testes
+
+```bash
+.\mvnw.cmd clean test
+```
+
+---
+
+## Base URL
+
+```text
+http://localhost:8080
+```
+
+---
+
+## Endpoints Principais
+
+### Clientes
+
+```http
+POST /clientes
+POST /clientes/login
+GET /clientes
+GET /clientes/{id}
+PUT /clientes/{id}
+DELETE /clientes/{id}
+```
+
+### Residências
+
+```http
+POST /residencias
+GET /residencias
+GET /residencias/{id}
+PUT /residencias/{id}
+DELETE /residencias/{id}
+GET /residencias/{id}/historico
+```
+
+### Quartos
+
+```http
+POST /quartos
+GET /quartos
+GET /quartos/{id}
+PUT /quartos/{id}
+DELETE /quartos/{id}
+```
+
+### Reservas
+
+```http
+POST /reservas
+GET /reservas
+GET /reservas/{id}
+PATCH /reservas/{id}/cancelar
+```
+
+### Aluguéis
+
+```http
+POST /alugueis
+GET /alugueis
+GET /alugueis/{id}
+PATCH /alugueis/{id}/pagar
+GET /alugueis/{id}/recibo
+```
+
+---
+
+## Testes Automatizados
+
+Cobertura de cenários importantes:
+
+- CPF duplicado
+- Login inválido
+- Reserva conflitante
+- Reserva em quarto alugado
+- Quarto ocupado
+- Quarto inexistente
+- Regra do meio-dia
+- Cálculo de diárias
+
+---
+
+## Boas Práticas Aplicadas
+
+- Arquitetura em camadas
+- DTO Pattern
+- Repository Pattern
+- Service Layer
+- Bean Validation
+- Tratamento global de exceções
+- Separação de responsabilidades
+
+---
+
+## Evoluções Futuras
+
+- Autenticação JWT
+- Criptografia de senhas
+- Dashboard administrativo
+- Relatórios financeiros
+- Upload de imagens
+
+---
+
+## Autor
+
+Pedro Lucas Soares Rezende  
+Estudante de Engenharia de Software - PUC Minas
