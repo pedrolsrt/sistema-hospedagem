@@ -1,11 +1,14 @@
 package br.pucminas.sistema_hospedagem.service;
 
 import br.pucminas.sistema_hospedagem.dto.ClienteRequestDTO;
+import br.pucminas.sistema_hospedagem.dto.LoginRequestDTO;
 import br.pucminas.sistema_hospedagem.exception.RegraDeNegocioException;
 import br.pucminas.sistema_hospedagem.repository.ClienteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -29,11 +32,26 @@ public class ClienteServiceTest {
         clienteRequestDTO.setEndereco("Rua A, 123");
         clienteRequestDTO.setTelefone("31999999999");
         clienteRequestDTO.setEmail("pedro@email.com");
+        clienteRequestDTO.setSenha("123456");
 
         when(clienteRepository.existsByCpf("12345678901")).thenReturn(true);
 
         assertThrows(RegraDeNegocioException.class, () -> {
             clienteService.cadastrarCliente(clienteRequestDTO);
+        });
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoLoginForInvalido() {
+        LoginRequestDTO loginRequestDTO = new LoginRequestDTO();
+        loginRequestDTO.setEmail("pedro@email.com");
+        loginRequestDTO.setSenha("senhaerrada");
+
+        when(clienteRepository.findByEmailAndSenha("pedro@email.com", "senhaerrada"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(RegraDeNegocioException.class, () -> {
+            clienteService.autenticar(loginRequestDTO);
         });
     }
 }

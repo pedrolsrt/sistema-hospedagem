@@ -3,7 +3,10 @@ package br.pucminas.sistema_hospedagem.service;
 import br.pucminas.sistema_hospedagem.dto.AluguelRequestDTO;
 import br.pucminas.sistema_hospedagem.dto.AluguelResponseDTO;
 import br.pucminas.sistema_hospedagem.enums.StatusPagamento;
+import br.pucminas.sistema_hospedagem.enums.StatusReserva;
+import br.pucminas.sistema_hospedagem.enums.TipoQuarto;
 import br.pucminas.sistema_hospedagem.exception.RegraDeNegocioException;
+import br.pucminas.sistema_hospedagem.exception.RecursoNaoEncontradoException;
 import br.pucminas.sistema_hospedagem.model.Aluguel;
 import br.pucminas.sistema_hospedagem.model.Cliente;
 import br.pucminas.sistema_hospedagem.model.Pagamento;
@@ -103,11 +106,12 @@ public class AluguelServiceTest {
         quarto.setValorBaseDiaria(100.0);
         quarto.setPossuiArCondicionado(false);
         quarto.setPossuiHidromassagem(false);
+        quarto.setTipo(TipoQuarto.INDIVIDUAL);
 
         Pagamento pagamentoSalvo = new Pagamento();
         pagamentoSalvo.setId(1L);
         pagamentoSalvo.setStatus(StatusPagamento.PENDENTE);
-        pagamentoSalvo.setValor(100.0);
+        pagamentoSalvo.setValor(200.0);
 
         Aluguel aluguelSalvo = new Aluguel();
         aluguelSalvo.setId(1L);
@@ -135,7 +139,7 @@ public class AluguelServiceTest {
         )).thenReturn(List.of());
         when(reservaRepository.findByQuartoIdAndStatusAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
                 Mockito.eq(1L),
-                Mockito.any(),
+                Mockito.eq(StatusReserva.ATIVA),
                 Mockito.any(LocalDateTime.class),
                 Mockito.any(LocalDateTime.class)
         )).thenReturn(List.of());
@@ -146,5 +150,84 @@ public class AluguelServiceTest {
 
         assertEquals(2, response.getQuantidadeDiarias());
         assertEquals(200.0, response.getValorFinal());
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoQuartoNaoExistir() {
+        Cliente cliente = new Cliente();
+        cliente.setId(1L);
+
+        AluguelRequestDTO aluguelRequestDTO = new AluguelRequestDTO();
+        aluguelRequestDTO.setClienteId(1L);
+        aluguelRequestDTO.setQuartoId(99L);
+        aluguelRequestDTO.setDataEntrada(LocalDateTime.now().plusDays(2));
+        aluguelRequestDTO.setDataSaida(LocalDateTime.now().plusDays(3));
+
+        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
+        when(quartoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(RecursoNaoEncontradoException.class, () -> {
+            aluguelService.cadastrarAluguel(aluguelRequestDTO);
+        });
+    }
+
+    @Test
+    void deveCalcularUmaDiariaQuandoEntradaEsaidaForemExatamenteAoMeioDia() {
+        Cliente cliente = new Cliente();
+        cliente.setId(1L);
+
+        Residencia residencia = new Residencia();
+        residencia.setId(1L);
+
+        Quarto quarto = new Quarto();
+        quarto.setId(1L);
+        quarto.setResidencia(residencia);
+        quarto.setValorBaseDiaria(100.0);
+        quarto.setPossuiArCondicionado(false);
+        quarto.setPossuiHidromassagem(false);
+        quarto.setTipo(TipoQuarto.INDIVIDUAL);
+
+        Pagamento pagamentoSalvo = new Pagamento();
+        pagamentoSalvo.setId(2L);
+        pagamentoSalvo.setStatus(StatusPagamento.PENDENTE);
+        pagamentoSalvo.setValor(100.0);
+
+        Aluguel aluguelSalvo = new Aluguel();
+        aluguelSalvo.setId(2L);
+        aluguelSalvo.setCliente(cliente);
+        aluguelSalvo.setQuarto(quarto);
+        aluguelSalvo.setResidencia(residencia);
+        aluguelSalvo.setDataEntrada(LocalDateTime.of(2026, 4, 20, 12, 0));
+        aluguelSalvo.setDataSaida(LocalDateTime.of(2026, 4, 21, 12, 0));
+        aluguelSalvo.setQuantidadeDiarias(1);
+        aluguelSalvo.setValorFinal(100.0);
+        aluguelSalvo.setPagamento(pagamentoSalvo);
+
+        AluguelRequestDTO aluguelRequestDTO = new AluguelRequestDTO();
+        aluguelRequestDTO.setClienteId(1L);
+        aluguelRequestDTO.setQuartoId(1L);
+        aluguelRequestDTO.setDataEntrada(LocalDateTime.of(2026, 4, 20, 12, 0));
+        aluguelRequestDTO.setDataSaida(LocalDateTime.of(2026, 4, 21, 12, 0));
+
+        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
+        when(quartoRepository.findById(1L)).thenReturn(Optional.of(quarto));
+        when(aluguelRepository.findByQuartoIdAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
+                Mockito.eq(1L),
+                Mockito.any(LocalDateTime.class),
+                Mockito.any(LocalDateTime.class)
+        )).thenReturn(List.of());
+        when(reservaRepository.findByQuartoIdAndStatusAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
+                Mockito.eq(1L),
+                Mockito.eq(StatusReserva.ATIVA),
+                Mockito.any(LocalDateTime.class),
+                Mockito.any(LocalDateTime.class)
+        )).thenReturn(List.of());
+        when(pagamentoRepository.save(Mockito.any(Pagamento.class))).thenReturn(pagamentoSalvo);
+        when(aluguelRepository.save(Mockito.any(Aluguel.class))).thenReturn(aluguelSalvo);
+
+        AluguelResponseDTO response = aluguelService.cadastrarAluguel(aluguelRequestDTO);
+
+        assertEquals(1, response.getQuantidadeDiarias());
+        assertEquals(100.0, response.getValorFinal());
     }
 }
