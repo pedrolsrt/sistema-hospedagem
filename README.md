@@ -256,4 +256,5 @@ Cobertura de cenários importantes:
 ## Autor
 
 Pedro Lucas Soares Rezende  
+Raquel Cristina Pereira dos Santos
 Estudante de Engenharia de Software - PUC Minas
