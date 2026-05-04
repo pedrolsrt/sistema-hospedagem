@@ -29,9 +29,15 @@ import java.util.List;
 @Service
 public class AluguelService {
 
-    private static final double ADICIONAL_TIPO_CASAL = 40.0;
     private static final double ADICIONAL_AR_CONDICIONADO = 30.0;
     private static final double ADICIONAL_HIDROMASSAGEM = 50.0;
+    private static final double ADICIONAL_CAMA_SOLTEIRO_EXTRA = 25.0;
+    private static final double ADICIONAL_CAMA_QUEEN = 35.0;
+    private static final double ADICIONAL_CAMA_KING = 55.0;
+    private static final double ADICIONAL_BERCO = 30.0;
+    private static final double ADICIONAL_HOSPEDE_FAMILIA = 20.0;
+    private static final double ADICIONAL_AMBIENTE_FAMILIA = 40.0;
+    private static final double DESCONTO_GRUPO_FAMILIA = 0.10;
 
     private final AluguelRepository aluguelRepository;
     private final PagamentoRepository pagamentoRepository;
@@ -64,6 +70,12 @@ public class AluguelService {
                         "Quarto não encontrado com o id: " + aluguelRequestDTO.getQuartoId()
                 ));
 
+        Integer numeroHospedes = aluguelRequestDTO.getNumeroHospedes();
+        Boolean solicitaBerco = Boolean.TRUE.equals(aluguelRequestDTO.getSolicitaBerco());
+
+        validarCapacidadeDoQuarto(quarto, numeroHospedes);
+        validarSolicitacaoDeBerco(quarto, solicitaBerco);
+
         Residencia residencia = quarto.getResidencia();
 
         validarDisponibilidadeDoQuarto(
@@ -77,7 +89,7 @@ public class AluguelService {
                 aluguelRequestDTO.getDataSaida()
         );
 
-        Double valorDiariaCalculado = calcularValorDiaria(quarto);
+        Double valorDiariaCalculado = calcularValorDiaria(quarto, numeroHospedes, solicitaBerco);
         Double valorFinal = valorDiariaCalculado * quantidadeDiarias;
 
         Pagamento pagamento = new Pagamento();
@@ -92,6 +104,8 @@ public class AluguelService {
         aluguel.setDataEntrada(aluguelRequestDTO.getDataEntrada());
         aluguel.setDataSaida(aluguelRequestDTO.getDataSaida());
         aluguel.setQuantidadeDiarias(quantidadeDiarias);
+        aluguel.setNumeroHospedes(numeroHospedes);
+        aluguel.setSolicitouBerco(solicitaBerco);
         aluguel.setValorFinal(valorFinal);
         aluguel.setPagamento(pagamentoSalvo);
 
@@ -145,6 +159,22 @@ public class AluguelService {
     private void validarDatas(LocalDateTime dataEntrada, LocalDateTime dataSaida) {
         if (!dataSaida.isAfter(dataEntrada)) {
             throw new RegraDeNegocioException("A data de saída deve ser posterior à data de entrada.");
+        }
+    }
+
+    private void validarCapacidadeDoQuarto(Quarto quarto, Integer numeroHospedes) {
+        if (numeroHospedes == null || numeroHospedes <= 0) {
+            throw new RegraDeNegocioException("O número de hóspedes deve ser maior que zero.");
+        }
+
+        if (numeroHospedes > quarto.getCapacidadeMaxima()) {
+            throw new RegraDeNegocioException("O número de hóspedes excede a capacidade máxima do quarto.");
+        }
+    }
+
+    private void validarSolicitacaoDeBerco(Quarto quarto, Boolean solicitaBerco) {
+        if (Boolean.TRUE.equals(solicitaBerco) && !Boolean.TRUE.equals(quarto.getPermiteBerco())) {
+            throw new RegraDeNegocioException("O quarto selecionado não permite berço.");
         }
     }
 
@@ -206,12 +236,8 @@ public class AluguelService {
         return baseNoDia;
     }
 
-    private Double calcularValorDiaria(Quarto quarto) {
+    private Double calcularValorDiaria(Quarto quarto, Integer numeroHospedes, Boolean solicitaBerco) {
         double valor = quarto.getValorBaseDiaria();
-
-        if (quarto.getTipo() == TipoQuarto.CASAL) {
-            valor += ADICIONAL_TIPO_CASAL;
-        }
 
         if (Boolean.TRUE.equals(quarto.getPossuiArCondicionado())) {
             valor += ADICIONAL_AR_CONDICIONADO;
@@ -219,6 +245,65 @@ public class AluguelService {
 
         if (Boolean.TRUE.equals(quarto.getPossuiHidromassagem())) {
             valor += ADICIONAL_HIDROMASSAGEM;
+        }
+
+        if (quarto.getTipo() == TipoQuarto.INDIVIDUAL) {
+            valor += calcularAdicionalQuartoIndividual(quarto);
+        }
+
+        if (quarto.getTipo() == TipoQuarto.CASAL) {
+            valor += calcularAdicionalQuartoCasal(quarto, solicitaBerco);
+        }
+
+        if (quarto.getTipo() == TipoQuarto.FAMILIA) {
+            valor += calcularAdicionalQuartoFamilia(quarto, numeroHospedes);
+            valor = aplicarDescontoProgressivoFamilia(valor, numeroHospedes);
+        }
+
+        return valor;
+    }
+
+    private Double calcularAdicionalQuartoIndividual(Quarto quarto) {
+        int camasExtras = quarto.getQuantidadeCamasSolteiro() - 1;
+
+        if (camasExtras <= 0) {
+            return 0.0;
+        }
+
+        return camasExtras * ADICIONAL_CAMA_SOLTEIRO_EXTRA;
+    }
+
+    private Double calcularAdicionalQuartoCasal(Quarto quarto, Boolean solicitaBerco) {
+        double adicional = 0.0;
+
+        adicional += quarto.getQuantidadeCamasQueen() * ADICIONAL_CAMA_QUEEN;
+        adicional += quarto.getQuantidadeCamasKing() * ADICIONAL_CAMA_KING;
+
+        if (Boolean.TRUE.equals(solicitaBerco)) {
+            adicional += ADICIONAL_BERCO;
+        }
+
+        return adicional;
+    }
+
+    private Double calcularAdicionalQuartoFamilia(Quarto quarto, Integer numeroHospedes) {
+        double adicional = 0.0;
+
+        adicional += numeroHospedes * ADICIONAL_HOSPEDE_FAMILIA;
+
+        if (quarto.getQuantidadeAmbientes() > 1) {
+            adicional += (quarto.getQuantidadeAmbientes() - 1) * ADICIONAL_AMBIENTE_FAMILIA;
+        }
+
+        adicional += quarto.getQuantidadeCamasQueen() * ADICIONAL_CAMA_QUEEN;
+        adicional += quarto.getQuantidadeCamasKing() * ADICIONAL_CAMA_KING;
+
+        return adicional;
+    }
+
+    private Double aplicarDescontoProgressivoFamilia(Double valor, Integer numeroHospedes) {
+        if (numeroHospedes >= 5) {
+            return valor - (valor * DESCONTO_GRUPO_FAMILIA);
         }
 
         return valor;
@@ -229,6 +314,9 @@ public class AluguelService {
                 + "Cliente: " + aluguel.getCliente().getNome() + System.lineSeparator()
                 + "Residência: " + aluguel.getResidencia().getEndereco() + System.lineSeparator()
                 + "Quarto: " + aluguel.getQuarto().getId() + System.lineSeparator()
+                + "Tipo do quarto: " + aluguel.getQuarto().getTipo().name() + System.lineSeparator()
+                + "Número de hóspedes: " + aluguel.getNumeroHospedes() + System.lineSeparator()
+                + "Berço solicitado: " + (Boolean.TRUE.equals(aluguel.getSolicitouBerco()) ? "Sim" : "Não") + System.lineSeparator()
                 + "Data e horário de entrada: " + aluguel.getDataEntrada() + System.lineSeparator()
                 + "Data e horário de saída: " + aluguel.getDataSaida() + System.lineSeparator()
                 + "Número de diárias: " + aluguel.getQuantidadeDiarias() + System.lineSeparator()

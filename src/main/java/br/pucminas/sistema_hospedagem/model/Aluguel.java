@@ -58,6 +58,15 @@ public class Aluguel {
     @Column(name = "quantidade_diarias", nullable = false)
     private Integer quantidadeDiarias;
 
+    @NotNull(message = "O número de hóspedes é obrigatório.")
+    @Positive(message = "O número de hóspedes deve ser maior que zero.")
+    @Column(name = "numero_hospedes", nullable = false)
+    private Integer numeroHospedes;
+
+    @NotNull(message = "Informe se foi solicitado berço.")
+    @Column(name = "solicitou_berco", nullable = false)
+    private Boolean solicitouBerco;
+
     @NotNull(message = "O valor final é obrigatório.")
     @Positive(message = "O valor final deve ser maior que zero.")
     @Column(name = "valor_final", nullable = false)

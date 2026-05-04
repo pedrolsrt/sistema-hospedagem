@@ -1,6 +1,7 @@
 package br.pucminas.sistema_hospedagem.dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +18,12 @@ public class AluguelRequestDTO {
 
     @NotNull(message = "A data de saída é obrigatória.")
     private LocalDateTime dataSaida;
+
+    @NotNull(message = "O número de hóspedes é obrigatório.")
+    @Positive(message = "O número de hóspedes deve ser maior que zero.")
+    private Integer numeroHospedes;
+
+    private Boolean solicitaBerco;
 
     public AluguelRequestDTO() {
     }
@@ -51,5 +58,21 @@ public class AluguelRequestDTO {
 
     public void setDataSaida(LocalDateTime dataSaida) {
         this.dataSaida = dataSaida;
+    }
+
+    public Integer getNumeroHospedes() {
+        return numeroHospedes;
+    }
+
+    public void setNumeroHospedes(Integer numeroHospedes) {
+        this.numeroHospedes = numeroHospedes;
+    }
+
+    public Boolean getSolicitaBerco() {
+        return solicitaBerco;
+    }
+
+    public void setSolicitaBerco(Boolean solicitaBerco) {
+        this.solicitaBerco = solicitaBerco;
     }
 }
