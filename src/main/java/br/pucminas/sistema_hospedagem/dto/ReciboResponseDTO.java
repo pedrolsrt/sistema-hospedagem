@@ -8,9 +8,12 @@ public class ReciboResponseDTO {
     private String nomeCliente;
     private String enderecoResidencia;
     private Long quartoId;
+    private String tipoQuarto;
     private LocalDateTime dataEntrada;
     private LocalDateTime dataSaida;
     private Integer quantidadeDiarias;
+    private Integer numeroHospedes;
+    private Boolean solicitouBerco;
     private Double valorFinal;
     private String statusPagamento;
     private String reciboFormatado;
@@ -22,9 +25,12 @@ public class ReciboResponseDTO {
                              String nomeCliente,
                              String enderecoResidencia,
                              Long quartoId,
+                             String tipoQuarto,
                              LocalDateTime dataEntrada,
                              LocalDateTime dataSaida,
                              Integer quantidadeDiarias,
+                             Integer numeroHospedes,
+                             Boolean solicitouBerco,
                              Double valorFinal,
                              String statusPagamento,
                              String reciboFormatado) {
@@ -32,9 +38,12 @@ public class ReciboResponseDTO {
         this.nomeCliente = nomeCliente;
         this.enderecoResidencia = enderecoResidencia;
         this.quartoId = quartoId;
+        this.tipoQuarto = tipoQuarto;
         this.dataEntrada = dataEntrada;
         this.dataSaida = dataSaida;
         this.quantidadeDiarias = quantidadeDiarias;
+        this.numeroHospedes = numeroHospedes;
+        this.solicitouBerco = solicitouBerco;
         this.valorFinal = valorFinal;
         this.statusPagamento = statusPagamento;
         this.reciboFormatado = reciboFormatado;
@@ -44,79 +53,51 @@ public class ReciboResponseDTO {
         return aluguelId;
     }
 
-    public void setAluguelId(Long aluguelId) {
-        this.aluguelId = aluguelId;
-    }
-
     public String getNomeCliente() {
         return nomeCliente;
-    }
-
-    public void setNomeCliente(String nomeCliente) {
-        this.nomeCliente = nomeCliente;
     }
 
     public String getEnderecoResidencia() {
         return enderecoResidencia;
     }
 
-    public void setEnderecoResidencia(String enderecoResidencia) {
-        this.enderecoResidencia = enderecoResidencia;
-    }
-
     public Long getQuartoId() {
         return quartoId;
     }
 
-    public void setQuartoId(Long quartoId) {
-        this.quartoId = quartoId;
+    public String getTipoQuarto() {
+        return tipoQuarto;
     }
 
     public LocalDateTime getDataEntrada() {
         return dataEntrada;
     }
 
-    public void setDataEntrada(LocalDateTime dataEntrada) {
-        this.dataEntrada = dataEntrada;
-    }
-
     public LocalDateTime getDataSaida() {
         return dataSaida;
-    }
-
-    public void setDataSaida(LocalDateTime dataSaida) {
-        this.dataSaida = dataSaida;
     }
 
     public Integer getQuantidadeDiarias() {
         return quantidadeDiarias;
     }
 
-    public void setQuantidadeDiarias(Integer quantidadeDiarias) {
-        this.quantidadeDiarias = quantidadeDiarias;
+    public Integer getNumeroHospedes() {
+        return numeroHospedes;
+    }
+
+    public Boolean getSolicitouBerco() {
+        return solicitouBerco;
     }
 
     public Double getValorFinal() {
         return valorFinal;
     }
 
-    public void setValorFinal(Double valorFinal) {
-        this.valorFinal = valorFinal;
-    }
-
     public String getStatusPagamento() {
         return statusPagamento;
     }
 
-    public void setStatusPagamento(String statusPagamento) {
-        this.statusPagamento = statusPagamento;
-    }
-
     public String getReciboFormatado() {
         return reciboFormatado;
-    }
-
-    public void setReciboFormatado(String reciboFormatado) {
-        this.reciboFormatado = reciboFormatado;
     }
 }

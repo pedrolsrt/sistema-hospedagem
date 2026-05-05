@@ -11,6 +11,8 @@ public class AluguelResponseDTO {
     private LocalDateTime dataEntrada;
     private LocalDateTime dataSaida;
     private Integer quantidadeDiarias;
+    private Integer numeroHospedes;
+    private Boolean solicitouBerco;
     private Double valorFinal;
     private Long pagamentoId;
     private String statusPagamento;
@@ -26,6 +28,8 @@ public class AluguelResponseDTO {
                               LocalDateTime dataEntrada,
                               LocalDateTime dataSaida,
                               Integer quantidadeDiarias,
+                              Integer numeroHospedes,
+                              Boolean solicitouBerco,
                               Double valorFinal,
                               Long pagamentoId,
                               String statusPagamento,
@@ -37,6 +41,8 @@ public class AluguelResponseDTO {
         this.dataEntrada = dataEntrada;
         this.dataSaida = dataSaida;
         this.quantidadeDiarias = quantidadeDiarias;
+        this.numeroHospedes = numeroHospedes;
+        this.solicitouBerco = solicitouBerco;
         this.valorFinal = valorFinal;
         this.pagamentoId = pagamentoId;
         this.statusPagamento = statusPagamento;
@@ -69,6 +75,14 @@ public class AluguelResponseDTO {
 
     public Integer getQuantidadeDiarias() {
         return quantidadeDiarias;
+    }
+
+    public Integer getNumeroHospedes() {
+        return numeroHospedes;
+    }
+
+    public Boolean getSolicitouBerco() {
+        return solicitouBerco;
     }
 
     public Double getValorFinal() {
