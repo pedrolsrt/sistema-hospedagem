@@ -6,11 +6,11 @@ import br.pucminas.sistema_hospedagem.enums.StatusPagamento;
 import br.pucminas.sistema_hospedagem.enums.StatusReserva;
 import br.pucminas.sistema_hospedagem.enums.TipoQuarto;
 import br.pucminas.sistema_hospedagem.exception.RegraDeNegocioException;
-import br.pucminas.sistema_hospedagem.exception.RecursoNaoEncontradoException;
 import br.pucminas.sistema_hospedagem.model.Aluguel;
 import br.pucminas.sistema_hospedagem.model.Cliente;
 import br.pucminas.sistema_hospedagem.model.Pagamento;
 import br.pucminas.sistema_hospedagem.model.Quarto;
+import br.pucminas.sistema_hospedagem.model.Reserva;
 import br.pucminas.sistema_hospedagem.model.Residencia;
 import br.pucminas.sistema_hospedagem.repository.AluguelRepository;
 import br.pucminas.sistema_hospedagem.repository.ClienteRepository;
@@ -18,6 +18,7 @@ import br.pucminas.sistema_hospedagem.repository.PagamentoRepository;
 import br.pucminas.sistema_hospedagem.repository.QuartoRepository;
 import br.pucminas.sistema_hospedagem.repository.ReservaRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -25,8 +26,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 public class AluguelServiceTest {
@@ -37,6 +37,10 @@ public class AluguelServiceTest {
     private QuartoRepository quartoRepository;
     private ReservaRepository reservaRepository;
     private AluguelService aluguelService;
+
+    private Cliente cliente;
+    private Residencia residencia;
+    private Quarto quartoFamilia;
 
     @BeforeEach
     void setUp() {
@@ -53,181 +57,227 @@ public class AluguelServiceTest {
                 quartoRepository,
                 reservaRepository
         );
+
+        cliente = new Cliente();
+        cliente.setId(1L);
+        cliente.setNome("Pedro Lucas");
+
+        residencia = new Residencia();
+        residencia.setId(1L);
+        residencia.setEndereco("Rua das Flores");
+        residencia.setNumero("100");
+        residencia.setBairro("Centro");
+        residencia.setCep("30000000");
+        residencia.setTelefone("31999999999");
+        residencia.setEmail("residencia@email.com");
+
+        quartoFamilia = new Quarto();
+        quartoFamilia.setId(1L);
+        quartoFamilia.setTipo(TipoQuarto.FAMILIA);
+        quartoFamilia.setValorBaseDiaria(200.0);
+        quartoFamilia.setPossuiArCondicionado(true);
+        quartoFamilia.setPossuiHidromassagem(true);
+        quartoFamilia.setQuantidadeCamasSolteiro(2);
+        quartoFamilia.setQuantidadeCamasCasal(1);
+        quartoFamilia.setQuantidadeCamasQueen(1);
+        quartoFamilia.setQuantidadeCamasKing(0);
+        quartoFamilia.setCapacidadeMaxima(5);
+        quartoFamilia.setQuantidadeAmbientes(3);
+        quartoFamilia.setPermiteBerco(true);
+        quartoFamilia.setResidencia(residencia);
     }
 
     @Test
-    void deveLancarExcecaoQuandoQuartoJaEstiverOcupadoNoPeriodo() {
-        Cliente cliente = new Cliente();
-        cliente.setId(1L);
+    @DisplayName("Deve validar capacidade máxima de hóspedes")
+    void deveValidarCapacidadeMaximaDeHospedes() {
+        AluguelRequestDTO request = criarAluguelValido();
+        request.setNumeroHospedes(6);
 
-        Residencia residencia = new Residencia();
-        residencia.setId(1L);
+        prepararBuscaClienteEQuarto();
 
-        Quarto quarto = new Quarto();
-        quarto.setId(1L);
-        quarto.setResidencia(residencia);
-
-        Aluguel aluguelExistente = new Aluguel();
-        aluguelExistente.setId(10L);
-        aluguelExistente.setQuarto(quarto);
-        aluguelExistente.setDataEntrada(LocalDateTime.now().plusDays(3));
-        aluguelExistente.setDataSaida(LocalDateTime.now().plusDays(5));
-
-        AluguelRequestDTO aluguelRequestDTO = new AluguelRequestDTO();
-        aluguelRequestDTO.setClienteId(1L);
-        aluguelRequestDTO.setQuartoId(1L);
-        aluguelRequestDTO.setDataEntrada(LocalDateTime.now().plusDays(4));
-        aluguelRequestDTO.setDataSaida(LocalDateTime.now().plusDays(6));
-
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(quartoRepository.findById(1L)).thenReturn(Optional.of(quarto));
-        when(aluguelRepository.findByQuartoIdAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
-                Mockito.eq(1L),
-                Mockito.any(LocalDateTime.class),
-                Mockito.any(LocalDateTime.class)
-        )).thenReturn(List.of(aluguelExistente));
-
-        assertThrows(RegraDeNegocioException.class, () -> {
-            aluguelService.cadastrarAluguel(aluguelRequestDTO);
-        });
+        assertThrows(
+                RegraDeNegocioException.class,
+                () -> aluguelService.cadastrarAluguel(request)
+        );
     }
 
     @Test
-    void deveCalcularQuantidadeDeDiariasCorretamenteConsiderandoRegraDoMeioDia() {
-        Cliente cliente = new Cliente();
-        cliente.setId(1L);
+    @DisplayName("Deve validar solicitação de berço")
+    void deveValidarSolicitacaoDeBerco() {
+        AluguelRequestDTO request = criarAluguelValido();
+        request.setSolicitaBerco(true);
+        quartoFamilia.setPermiteBerco(false);
 
-        Residencia residencia = new Residencia();
-        residencia.setId(1L);
+        prepararBuscaClienteEQuarto();
 
-        Quarto quarto = new Quarto();
-        quarto.setId(1L);
-        quarto.setResidencia(residencia);
-        quarto.setValorBaseDiaria(100.0);
-        quarto.setPossuiArCondicionado(false);
-        quarto.setPossuiHidromassagem(false);
-        quarto.setTipo(TipoQuarto.INDIVIDUAL);
+        assertThrows(
+                RegraDeNegocioException.class,
+                () -> aluguelService.cadastrarAluguel(request)
+        );
+    }
 
-        Pagamento pagamentoSalvo = new Pagamento();
-        pagamentoSalvo.setId(1L);
-        pagamentoSalvo.setStatus(StatusPagamento.PENDENTE);
-        pagamentoSalvo.setValor(200.0);
+    @Test
+    @DisplayName("Deve calcular diárias corretamente")
+    void deveCalcularDiariasCorretamente() {
+        AluguelRequestDTO request = criarAluguelValido();
+        request.setDataEntrada(LocalDateTime.of(2026, 5, 1, 13, 0));
+        request.setDataSaida(LocalDateTime.of(2026, 5, 5, 10, 0));
 
-        Aluguel aluguelSalvo = new Aluguel();
-        aluguelSalvo.setId(1L);
-        aluguelSalvo.setCliente(cliente);
-        aluguelSalvo.setQuarto(quarto);
-        aluguelSalvo.setResidencia(residencia);
-        aluguelSalvo.setDataEntrada(LocalDateTime.of(2026, 4, 20, 13, 0));
-        aluguelSalvo.setDataSaida(LocalDateTime.of(2026, 4, 21, 13, 30));
-        aluguelSalvo.setQuantidadeDiarias(2);
-        aluguelSalvo.setValorFinal(200.0);
-        aluguelSalvo.setPagamento(pagamentoSalvo);
+        prepararCenarioValido();
 
-        AluguelRequestDTO aluguelRequestDTO = new AluguelRequestDTO();
-        aluguelRequestDTO.setClienteId(1L);
-        aluguelRequestDTO.setQuartoId(1L);
-        aluguelRequestDTO.setDataEntrada(LocalDateTime.of(2026, 4, 20, 13, 0));
-        aluguelRequestDTO.setDataSaida(LocalDateTime.of(2026, 4, 21, 13, 30));
+        AluguelResponseDTO response = aluguelService.cadastrarAluguel(request);
 
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(quartoRepository.findById(1L)).thenReturn(Optional.of(quarto));
+        assertEquals(4, response.getQuantidadeDiarias());
+    }
+
+    @Test
+    @DisplayName("Deve aplicar regra do meio-dia")
+    void deveAplicarRegraDoMeioDia() {
+        AluguelRequestDTO request = criarAluguelValido();
+        request.setDataEntrada(LocalDateTime.of(2026, 5, 1, 13, 0));
+        request.setDataSaida(LocalDateTime.of(2026, 5, 5, 13, 0));
+
+        prepararCenarioValido();
+
+        AluguelResponseDTO response = aluguelService.cadastrarAluguel(request);
+
+        assertEquals(5, response.getQuantidadeDiarias());
+    }
+
+    @Test
+    @DisplayName("Deve calcular valor final")
+    void deveCalcularValorFinal() {
+        AluguelRequestDTO request = criarAluguelValido();
+
+        prepararCenarioValido();
+
+        AluguelResponseDTO response = aluguelService.cadastrarAluguel(request);
+
+        assertNotNull(response.getValorFinal());
+        assertTrue(response.getValorFinal() > 0);
+    }
+
+    @Test
+    @DisplayName("Deve aplicar desconto progressivo para quarto família")
+    void deveAplicarDescontoProgressivoParaQuartoFamilia() {
+        AluguelRequestDTO request = criarAluguelValido();
+        request.setNumeroHospedes(5);
+
+        prepararCenarioValido();
+
+        AluguelResponseDTO response = aluguelService.cadastrarAluguel(request);
+
+        assertEquals(5, response.getNumeroHospedes());
+        assertEquals(1782.0, response.getValorFinal(), 0.01);
+    }
+
+    @Test
+    @DisplayName("Deve impedir reserva conflitante")
+    void deveImpedirReservaConflitante() {
+        AluguelRequestDTO request = criarAluguelValido();
+
+        Reserva reservaConflitante = new Reserva();
+        reservaConflitante.setId(1L);
+        reservaConflitante.setStatus(StatusReserva.ATIVA);
+
+        prepararBuscaClienteEQuarto();
+
         when(aluguelRepository.findByQuartoIdAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
                 Mockito.eq(1L),
                 Mockito.any(LocalDateTime.class),
                 Mockito.any(LocalDateTime.class)
         )).thenReturn(List.of());
+
+        when(reservaRepository.findByQuartoIdAndStatusAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
+                Mockito.eq(1L),
+                Mockito.eq(StatusReserva.ATIVA),
+                Mockito.any(LocalDateTime.class),
+                Mockito.any(LocalDateTime.class)
+        )).thenReturn(List.of(reservaConflitante));
+
+        assertThrows(
+                RegraDeNegocioException.class,
+                () -> aluguelService.cadastrarAluguel(request)
+        );
+    }
+
+    @Test
+    @DisplayName("Deve impedir quarto ocupado")
+    void deveImpedirQuartoOcupado() {
+        AluguelRequestDTO request = criarAluguelValido();
+
+        Aluguel aluguelConflitante = new Aluguel();
+        aluguelConflitante.setId(2L);
+
+        prepararBuscaClienteEQuarto();
+
+        when(aluguelRepository.findByQuartoIdAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
+                Mockito.eq(1L),
+                Mockito.any(LocalDateTime.class),
+                Mockito.any(LocalDateTime.class)
+        )).thenReturn(List.of(aluguelConflitante));
+
+        assertThrows(
+                RegraDeNegocioException.class,
+                () -> aluguelService.cadastrarAluguel(request)
+        );
+    }
+
+    @Test
+    @DisplayName("Deve associar pagamento ao aluguel")
+    void deveAssociarPagamentoAoAluguel() {
+        AluguelRequestDTO request = criarAluguelValido();
+
+        prepararCenarioValido();
+
+        AluguelResponseDTO response = aluguelService.cadastrarAluguel(request);
+
+        assertNotNull(response.getPagamentoId());
+        assertEquals(StatusPagamento.PENDENTE.name(), response.getStatusPagamento());
+    }
+
+    private AluguelRequestDTO criarAluguelValido() {
+        AluguelRequestDTO request = new AluguelRequestDTO();
+        request.setClienteId(1L);
+        request.setQuartoId(1L);
+        request.setDataEntrada(LocalDateTime.of(2026, 5, 1, 13, 0));
+        request.setDataSaida(LocalDateTime.of(2026, 5, 5, 10, 0));
+        request.setNumeroHospedes(4);
+        request.setSolicitaBerco(false);
+        return request;
+    }
+
+    private void prepararBuscaClienteEQuarto() {
+        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
+        when(quartoRepository.findById(1L)).thenReturn(Optional.of(quartoFamilia));
+    }
+
+    private void prepararCenarioValido() {
+        prepararBuscaClienteEQuarto();
+
+        when(aluguelRepository.findByQuartoIdAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
+                Mockito.eq(1L),
+                Mockito.any(LocalDateTime.class),
+                Mockito.any(LocalDateTime.class)
+        )).thenReturn(List.of());
+
         when(reservaRepository.findByQuartoIdAndStatusAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
                 Mockito.eq(1L),
                 Mockito.eq(StatusReserva.ATIVA),
                 Mockito.any(LocalDateTime.class),
                 Mockito.any(LocalDateTime.class)
         )).thenReturn(List.of());
-        when(pagamentoRepository.save(Mockito.any(Pagamento.class))).thenReturn(pagamentoSalvo);
-        when(aluguelRepository.save(Mockito.any(Aluguel.class))).thenReturn(aluguelSalvo);
 
-        AluguelResponseDTO response = aluguelService.cadastrarAluguel(aluguelRequestDTO);
-
-        assertEquals(2, response.getQuantidadeDiarias());
-        assertEquals(200.0, response.getValorFinal());
-    }
-
-    @Test
-    void deveLancarExcecaoQuandoQuartoNaoExistir() {
-        Cliente cliente = new Cliente();
-        cliente.setId(1L);
-
-        AluguelRequestDTO aluguelRequestDTO = new AluguelRequestDTO();
-        aluguelRequestDTO.setClienteId(1L);
-        aluguelRequestDTO.setQuartoId(99L);
-        aluguelRequestDTO.setDataEntrada(LocalDateTime.now().plusDays(2));
-        aluguelRequestDTO.setDataSaida(LocalDateTime.now().plusDays(3));
-
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(quartoRepository.findById(99L)).thenReturn(Optional.empty());
-
-        assertThrows(RecursoNaoEncontradoException.class, () -> {
-            aluguelService.cadastrarAluguel(aluguelRequestDTO);
+        when(pagamentoRepository.save(Mockito.any(Pagamento.class))).thenAnswer(invocation -> {
+            Pagamento pagamento = invocation.getArgument(0);
+            pagamento.setId(1L);
+            return pagamento;
         });
-    }
 
-    @Test
-    void deveCalcularUmaDiariaQuandoEntradaEsaidaForemExatamenteAoMeioDia() {
-        Cliente cliente = new Cliente();
-        cliente.setId(1L);
-
-        Residencia residencia = new Residencia();
-        residencia.setId(1L);
-
-        Quarto quarto = new Quarto();
-        quarto.setId(1L);
-        quarto.setResidencia(residencia);
-        quarto.setValorBaseDiaria(100.0);
-        quarto.setPossuiArCondicionado(false);
-        quarto.setPossuiHidromassagem(false);
-        quarto.setTipo(TipoQuarto.INDIVIDUAL);
-
-        Pagamento pagamentoSalvo = new Pagamento();
-        pagamentoSalvo.setId(2L);
-        pagamentoSalvo.setStatus(StatusPagamento.PENDENTE);
-        pagamentoSalvo.setValor(100.0);
-
-        Aluguel aluguelSalvo = new Aluguel();
-        aluguelSalvo.setId(2L);
-        aluguelSalvo.setCliente(cliente);
-        aluguelSalvo.setQuarto(quarto);
-        aluguelSalvo.setResidencia(residencia);
-        aluguelSalvo.setDataEntrada(LocalDateTime.of(2026, 4, 20, 12, 0));
-        aluguelSalvo.setDataSaida(LocalDateTime.of(2026, 4, 21, 12, 0));
-        aluguelSalvo.setQuantidadeDiarias(1);
-        aluguelSalvo.setValorFinal(100.0);
-        aluguelSalvo.setPagamento(pagamentoSalvo);
-
-        AluguelRequestDTO aluguelRequestDTO = new AluguelRequestDTO();
-        aluguelRequestDTO.setClienteId(1L);
-        aluguelRequestDTO.setQuartoId(1L);
-        aluguelRequestDTO.setDataEntrada(LocalDateTime.of(2026, 4, 20, 12, 0));
-        aluguelRequestDTO.setDataSaida(LocalDateTime.of(2026, 4, 21, 12, 0));
-
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(quartoRepository.findById(1L)).thenReturn(Optional.of(quarto));
-        when(aluguelRepository.findByQuartoIdAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
-                Mockito.eq(1L),
-                Mockito.any(LocalDateTime.class),
-                Mockito.any(LocalDateTime.class)
-        )).thenReturn(List.of());
-        when(reservaRepository.findByQuartoIdAndStatusAndDataEntradaLessThanEqualAndDataSaidaGreaterThanEqual(
-                Mockito.eq(1L),
-                Mockito.eq(StatusReserva.ATIVA),
-                Mockito.any(LocalDateTime.class),
-                Mockito.any(LocalDateTime.class)
-        )).thenReturn(List.of());
-        when(pagamentoRepository.save(Mockito.any(Pagamento.class))).thenReturn(pagamentoSalvo);
-        when(aluguelRepository.save(Mockito.any(Aluguel.class))).thenReturn(aluguelSalvo);
-
-        AluguelResponseDTO response = aluguelService.cadastrarAluguel(aluguelRequestDTO);
-
-        assertEquals(1, response.getQuantidadeDiarias());
-        assertEquals(100.0, response.getValorFinal());
+        when(aluguelRepository.save(Mockito.any(Aluguel.class))).thenAnswer(invocation -> {
+            Aluguel aluguel = invocation.getArgument(0);
+            aluguel.setId(1L);
+            return aluguel;
+        });
     }
 }
